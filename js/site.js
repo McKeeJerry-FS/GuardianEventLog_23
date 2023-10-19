@@ -90,10 +90,53 @@ function buildDropdown() {
         cityDropdownMenu.appendChild(dropdownMenuItem);
     }
 
+    displayEvents(currentEvents);
 }
 
 function getEvents() {
     // TODO: get events from loval storage
 
     return events;
+}
+
+function displayEvents(events){
+
+    // get the table to put the events in 
+    const eventsTable = document.getElementById('eventsTable');
+    // clear the table
+    eventsTable.innerHTML = '';
+    // loop through the events:
+
+    for(let i = 0; events.length; i++){
+        let event = events[i];
+        //  - fill the table with rows
+        //      - make a <tr></tr>
+        let eventRow = document.createElement('tr');
+        //      - make a <td></td>
+        let eventName = document.createElement('td');
+        eventName.innerText = event.event;
+        //      - put the data into each <td>
+        eventRow.appendChild(eventName)
+        
+        let eventCity = document.createElement('td');
+        eventCity.innerText = event.city;
+        eventRow.appendChild(eventCity)
+        
+        let eventState = document.createElement('td');
+        eventState.innerText = event.state;
+        eventRow.appendChild(eventState)
+        
+        let eventAttendance = document.createElement('td');
+        eventAttendance.innerText = event.attendance;
+        eventRow.appendChild(eventAttendance)
+        
+        let eventDate = document.createElement('td');
+        eventDate.innerText = event.date;
+        eventRow.appendChild(eventDate)
+        
+        //      - append the row to the <tbody>
+        eventsTable.appendChild(eventRow);
+        
+    }
+
 }
