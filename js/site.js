@@ -178,9 +178,7 @@ function maxAttendance(events) {
         // updated current number of the iteration
         number = events[i].attendance;
         // compares the max number with the current number and stores the larger of the two
-        max = Math.max(max, number);
-
-        
+        max = Math.max(max, number);    
     }
     // returned max value
     return max;
@@ -194,8 +192,6 @@ function minAttendance(events){
         number = events[i].attendance;
         // compares the max number with the current number and stores the larger of the two
         min = Math.min(min, number);
-
-        
     }
     // returned min value
     return min;
@@ -214,8 +210,5 @@ function displayStats(events) {
     // calculating min attendance and display
     let min = minAttendance(events);
     document.getElementById('minAttendance').innerText = min.toLocaleString();
-
-
-    
 
 }
