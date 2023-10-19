@@ -91,6 +91,7 @@ function buildDropdown() {
     }
 
     displayEvents(currentEvents);
+    displayStats(currentEvents);
 }
 
 function getEvents() {
@@ -107,7 +108,7 @@ function displayEvents(events){
     eventsTable.innerHTML = '';
     // loop through the events:
 
-    for(let i = 0; events.length; i++){
+    for(let i = 0; i < events.length; i++){
         let event = events[i];
         //  - fill the table with rows
         //      - make a <tr></tr>
@@ -138,5 +139,46 @@ function displayEvents(events){
         eventsTable.appendChild(eventRow);
         
     }
+
+}
+
+function sumAttendance(events) {
+    let sum = 0;
+    for (let i = 0; i < events.length; i++) {
+        let event = events[i];
+
+        sum += event.attendance;
+    }
+    return sum;
+
+}
+
+function avgAttendance(events){
+    // TODO: calculate the average attendance and return it
+    let sum = 0;
+    let avg = 0;
+    // get the sum of attendance
+    for (let i = 0; i < events.length; i++) {
+        let event = events[i];
+
+        sum += event.attendance;
+    }
+    // divide sum against the number of event attendance data
+    avg = sum / events.length;
+    // return the avg
+    return avg;
+}
+
+function displayStats(events) {
+    // calculating total attendance and display
+    let total = sumAttendance(events);
+    document.getElementById('totalAttendance').innerText = total.toLocaleString();
+    // calculating avg attendance and display
+    let avg = avgAttendance(events);
+    document.getElementById('avgAttendance').innerText = Math.round(avg).toLocaleString();
+    // calculating max attendance and display
+    // calculating min attendance and display
+
+    
 
 }
