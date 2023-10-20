@@ -78,6 +78,7 @@ function buildDropdown() {
     // get the dropdown template element and dropdown menu
     const dropdownItemTemplate = document.getElementById('dropdownItemTemplate');
     const cityDropdownMenu = document.getElementById('city-dropdown');
+    cityDropdownMenu.innerHTML = '';
 
     // foreach of those city names:
     for(let i = 0; i < dropdownChoices.length; i++){
@@ -92,12 +93,63 @@ function buildDropdown() {
 
     displayEvents(currentEvents);
     displayStats(currentEvents);
+    document.getElementById('statsLocation').textContent = 'All';
+
 }
 
 function getEvents() {
     // TODO: get events from loval storage
+    let eventsJson = localStorage.getItem('jmj-events');
 
-    return events;
+    let storedEvents = events;
+    if (eventsJson == null) {
+        saveEvents(events);
+    } else {
+        storedEvents = JSON.parse(eventsJson);
+    }
+
+    return storedEvents;
+}
+
+function saveEvents(events) {
+
+    // string ify the event coming from the form
+    let eventsJson = JSON.stringify(events);
+
+    // send the stingified event to localStorage along with a key
+    localStorage.setItem('jmj-events', eventsJson);
+
+}
+
+function addNewEvents() {
+    // get all known events
+    let addEventForm = document.getElementById('addEventForm');
+    
+    // create an object from the form
+    let formData = new FormData(addEventForm);
+    let newEvent = Object.fromEntries(formData.entries());
+
+    // fix the format
+    newEvent.attendance = parseInt(newEvent.attendance);
+    newEvent.date = new Date(newEvent.date).toLocaleDateString();
+
+    // get all current events
+    let allEvents = getEvents();
+    // add our new event
+    allEvents.push(newEvent);
+    // save the events
+    saveEvents(allEvents);
+
+    //clear form
+    addEventForm.reset();
+
+    // hide the modal
+    let modalElement = document.getElementById('addEventModal');
+    let bsModal = bootstrap.Modal.getInstance(modalElement);
+    bsModal.hide();
+
+    // display all events
+    buildDropdown();
 }
 
 function displayEvents(events){
@@ -186,7 +238,8 @@ function displayStats(events) {
 function filterByCity(dropdownBtn) {
     
     let cityName = dropdownBtn.textContent;
-   
+    document.getElementById('statsLocation').innerText = cityName;
+    // document.getElementById('dropdownBtn').innerText = cityName;
 
     // get all the events
     let allEvents = getEvents();
