@@ -128,19 +128,111 @@ function displayEvents(events){
         eventRow.appendChild(eventState)
         
         let eventAttendance = document.createElement('td');
-        eventAttendance.innerText = event.attendance;
+        eventAttendance.innerText = event.attendance.toLocaleString();
         eventRow.appendChild(eventAttendance)
         
         let eventDate = document.createElement('td');
-        eventDate.innerText = event.date;
+        let date = new Date(event.date)
+        eventDate.innerText = date.toLocaleDateString();
         eventRow.appendChild(eventDate)
         
         //      - append the row to the <tbody>
         eventsTable.appendChild(eventRow);
-        
     }
+}
+
+function calculateStats(events) {
+    let sum = 0;
+    let min = events[0].attendance;
+    let max = 0;
+    for (let i = 0; i < events.length; i++) {
+        let event = events[i];
+
+        sum += event.attendance;
+
+        if (event.attendance < min){
+            min = event.attendance
+        } 
+        
+        if (event.attendance > max){
+            max = event.attendance;
+        }
+
+
+    }
+    
+    let avg = sum / events.length;
+
+    let stats = {
+        sum,
+        avg,
+        min,
+        max,
+    }
+    return stats;
 
 }
+
+function displayStats(events) {
+
+    let stats = calculateStats(events)
+    document.getElementById('totalAttendance').innerText = stats.sum.toLocaleString();
+    document.getElementById('avgAttendance').innerText = Math.round(stats.avg).toLocaleString();
+    document.getElementById('maxAttendance').innerText = stats.max.toLocaleString();
+    document.getElementById('minAttendance').innerText = stats.min.toLocaleString();
+
+}
+
+function filterByCity(dropdownBtn) {
+    
+    let cityName = dropdownBtn.textContent;
+   
+
+    // get all the events
+    let allEvents = getEvents();
+    let eventsInCity = [];
+
+    // filter those events to just one city
+    // for(let i=0; i < allEvents.length; i++){
+    //     let event = allEvents[i];
+    //     if(event.city == cityName || cityName == 'All'){
+    //         eventsInCity.push(event);
+    //     } 
+    // }
+
+    // Ternary Statement
+    // let eventsInCity = cityName == 'All' ? allEvents : allEvents.filter(e => e.city == cityName);
+
+    if(cityName == 'All'){
+        eventsInCity = allEvents;
+    } else {
+        eventsInCity = allEvents.filter(event => event.city == cityName || cityName == 'All' );
+    }
+    
+    // call displayStats with the events for the city
+    displayStats(eventsInCity);
+    // call displayEvents with the events for the city
+    displayEvents(eventsInCity);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// reference code
 
 // function sumAttendance(events) {
 //     let sum = 0;
@@ -196,45 +288,3 @@ function displayEvents(events){
 //     // returned min value
 //     return min;
 // }
-
-function calculateStats(events) {
-    let sum = 0;
-    let min = events[0].attendance;
-    let max = 0;
-    for (let i = 0; i < events.length; i++) {
-        let event = events[i];
-
-        sum += event.attendance;
-
-        if (event.attendance < min){
-            min = event.attendance
-        } 
-        
-        if (event.attendance > max){
-            max = event.attendance;
-        }
-
-
-    }
-    
-    let avg = sum / events.length;
-
-    let stats = {
-        sum,
-        avg,
-        min,
-        max,
-    }
-    return stats;
-
-}
-
-function displayStats(events) {
-
-    let stats = calculateStats(events)
-    document.getElementById('totalAttendance').innerText = stats.sum.toLocaleString();
-    document.getElementById('avgAttendance').innerText = Math.round(stats.avg).toLocaleString();
-    document.getElementById('maxAttendance').innerText = stats.max.toLocaleString();
-    document.getElementById('minAttendance').innerText = stats.min.toLocaleString();
-
-}
