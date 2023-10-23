@@ -72,7 +72,7 @@
             </li>
             <li class="nav-item">
               <!-- Change me to the GitHub Repo link of the app -->
-              <a class="nav-link" href="https://github.com/McKeeJerry-FS"
+              <a class="nav-link" href="https://github.com/McKeeJerry-FS/GuardianEventLog_23"
                 >The Repo</a
               >
             </li>
@@ -107,27 +107,230 @@
             class="line-numbers"
           > <!-- This tag allows for any formatted text (indents, tabs, spaces) to be preserved -->
                     <code class="language-js"> <!-- allows code to be added to a block and formatted for code -->
-function displayMessage() {
-    // get the text out of input and assign to a variable
-    let msg = document.getElementById('message').value;
+                      function buildDropdown() {
     
-    Swal.fire(
-        {
-            backdrop: false,
-            title: 'Events Log',
-            text: msg, // <-- replace this with the variable
-        }
-    );
-}
+                        // get all the events that we know about
+                        let currentEvents = getEvents();
+                    
+                        // get a list of unique city names
+                        let eventCities = currentEvents.map(event => event.city);   // lambda function (array method) 
+                                                                                    // creates a new area of values specified
+                        let uniqueCities = new Set(eventCities);
+                        let dropdownChoices = ['All', ...uniqueCities];
+                        
+                        // get the dropdown template element and dropdown menu
+                        const dropdownItemTemplate = document.getElementById('dropdownItemTemplate');
+                        const cityDropdownMenu = document.getElementById('city-dropdown');
+                        cityDropdownMenu.innerHTML = '';
+                    
+                        // foreach of those city names:
+                        for(let i = 0; i < dropdownChoices.length; i++){
+                            let cityName = dropdownChoices[i];
+                            //  - need to make a dropdown item HTML element
+                            let dropdownMenuItem = dropdownItemTemplate.content.cloneNode(true);
+                    
+                            //  - and add the element to the dropdown menu
+                            dropdownMenuItem.querySelector('a').innerText = cityName;
+                            cityDropdownMenu.appendChild(dropdownMenuItem);
+                        }
+                    
+                        displayEvents(currentEvents);
+                        displayStats(currentEvents);
+                        document.getElementById('statsLocation').textContent = 'All';
+                    
+                    }
+                    
+                    function getEvents() {
+                        // TODO: get events from loval storage
+                        let eventsJson = localStorage.getItem('jmj-events');
+                    
+                        let storedEvents = events;
+                        if (eventsJson == null) {
+                            saveEvents(events);
+                        } else {
+                            storedEvents = JSON.parse(eventsJson);
+                        }
+                    
+                        return storedEvents;
+                    }
+                    
+                    function saveEvents(events) {
+                    
+                        // string ify the event coming from the form
+                        let eventsJson = JSON.stringify(events);
+                    
+                        // send the stingified event to localStorage along with a key
+                        localStorage.setItem('jmj-events', eventsJson);
+                    
+                    }
+                    
+                    function addNewEvents() {
+                        // get all known events
+                        let addEventForm = document.getElementById('addEventForm');
+                        
+                        // create an object from the form
+                        let formData = new FormData(addEventForm);
+                        let newEvent = Object.fromEntries(formData.entries());
+                    
+                        // fix the format
+                        newEvent.attendance = parseInt(newEvent.attendance);
+                        newEvent.date = new Date(newEvent.date).toLocaleDateString();
+                    
+                        // get all current events
+                        let allEvents = getEvents();
+                        // add our new event
+                        allEvents.push(newEvent);
+                        // save the events
+                        saveEvents(allEvents);
+                    
+                        //clear form
+                        addEventForm.reset();
+                    
+                        // hide the modal
+                        let modalElement = document.getElementById('addEventModal');
+                        let bsModal = bootstrap.Modal.getInstance(modalElement);
+                        bsModal.hide();
+                    
+                        // display all events
+                        buildDropdown();
+                    }
+                    
+                    function displayEvents(events){
+                    
+                        // get the table to put the events in 
+                        const eventsTable = document.getElementById('eventsTable');
+                        // clear the table
+                        eventsTable.innerHTML = '';
+                        // loop through the events:
+                    
+                        for(let i = 0; i < events.length; i++){
+                            let event = events[i];
+                            //  - fill the table with rows
+                            //      - make a <tr></tr>
+                            let eventRow = document.createElement('tr');
+                            //      - make a <td></td>
+                            let eventName = document.createElement('td');
+                            eventName.innerText = event.event;
+                            //      - put the data into each <td>
+                            eventRow.appendChild(eventName)
+                            
+                            let eventCity = document.createElement('td');
+                            eventCity.innerText = event.city;
+                            eventRow.appendChild(eventCity)
+                            
+                            let eventState = document.createElement('td');
+                            eventState.innerText = event.state;
+                            eventRow.appendChild(eventState)
+                            
+                            let eventAttendance = document.createElement('td');
+                            eventAttendance.innerText = event.attendance.toLocaleString();
+                            eventRow.appendChild(eventAttendance)
+                            
+                            let eventDate = document.createElement('td');
+                            let date = new Date(event.date)
+                            eventDate.innerText = date.toLocaleDateString();
+                            eventRow.appendChild(eventDate)
+                            
+                            //      - append the row to the <tbody>
+                            eventsTable.appendChild(eventRow);
+                        }
+                    }
+                    
+                    function calculateStats(events) {
+                        let sum = 0;
+                        let min = events[0].attendance;
+                        let max = 0;
+                        for (let i = 0; i < events.length; i++) {
+                            let event = events[i];
+                    
+                            sum += event.attendance;
+                    
+                            if (event.attendance < min){
+                                min = event.attendance
+                            } 
+                            
+                            if (event.attendance > max){
+                                max = event.attendance;
+                            }
+                    
+                    
+                        }
+                        
+                        let avg = sum / events.length;
+                    
+                        let stats = {
+                            sum,
+                            avg,
+                            min,
+                            max,
+                        }
+                        return stats;
+                    
+                    }
+                    
+                    function displayStats(events) {
+                    
+                        let stats = calculateStats(events)
+                        document.getElementById('totalAttendance').innerText = stats.sum.toLocaleString();
+                        document.getElementById('avgAttendance').innerText = Math.round(stats.avg).toLocaleString();
+                        document.getElementById('maxAttendance').innerText = stats.max.toLocaleString();
+                        document.getElementById('minAttendance').innerText = stats.min.toLocaleString();
+                    
+                    }
+                    
+                    function filterByCity(dropdownBtn) {
+                        
+                        let cityName = dropdownBtn.textContent;
+                        document.getElementById('statsLocation').innerText = cityName;
+                        // document.getElementById('dropdownBtn').innerText = cityName;
+                    
+                        // get all the events
+                        let allEvents = getEvents();
+                        let eventsInCity = [];
+                    
+                        // filter those events to just one city
+                        // for(let i=0; i < allEvents.length; i++){
+                        //     let event = allEvents[i];
+                        //     if(event.city == cityName || cityName == 'All'){
+                        //         eventsInCity.push(event);
+                        //     } 
+                        // }
+                    
+                        // Ternary Statement
+                        // let eventsInCity = cityName == 'All' ? allEvents : allEvents.filter(e => e.city == cityName);
+                    
+                        if(cityName == 'All'){
+                            eventsInCity = allEvents;
+                        } else {
+                            eventsInCity = allEvents.filter(event => event.city == cityName || cityName == 'All' );
+                        }
+                        
+                        // call displayStats with the events for the city
+                        displayStats(eventsInCity);
+                        // call displayEvents with the events for the city
+                        displayEvents(eventsInCity);
+                    
+                    
+                    
+                    }
                     </code>
                 </pre>
         </div>
         <div class="col-12 col-lg-4">
           <!-- Explain your code here -->
-          <p>The code is structured in one function</p>
+          
           <p>
-            <code>displayMessage</code> displays a SweetAlert when the button is
-            pressed.
+            In this particular program we are asked to create a program that disaplays the total attendance by city, displays the average attendance by city, display the the least and most attended event by city, display all stats for each city when selected, as well as have the ability to add new events and store them with in local storage.</p>
+            <p>
+            The program starts with a a call to <code>buildDropdown</code> which loads as soon as the page loads. This function takes care of multiple issues for the start of the program. First, it runs <code>getEvents</code> to get all of the events stored within local storage. A hardcoded array of events is set so if the program starts and there are no events in localStorage, Then the app will be pre-filled with data so that you can see the program in action. 
+            </p>
+            <p>
+            Next, the function calls <code>eventCities</code>, where I am utilizing a map method to create a array of of unique cities that will populate in the dropdown button on the app page. This button will be built out and set with all of the required links and will drive the other functions.
+            </p>
+            <p>
+            <code>displayEvents</code> is called next and will populate the table of events at the bottom of the app.The default for the table is 'All'. The dropdown button allows the user to choose which city they would like data to be displayed about. <code>displayStats</code> works in conjunction with <code>displayEvents</code>. It utilezes JavaScript math methods to find the total of all the events, to find the average of all of the events, and the minimum and maximum attended events for 'All' cities or the selected city.     
+            </p>
+
           </p>
         </div>
       </div>
